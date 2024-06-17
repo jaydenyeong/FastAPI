@@ -1,2 +1,2 @@
-# project
-Predicting Road Accident Severity with Machine learning
+# FastAPI
+Integrate FastAPI with a SQL Server database and implement full CRUD functionality
