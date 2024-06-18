@@ -1,10 +1,15 @@
-from fastapi import FastAPI, HTTPException, Response, status
+from fastapi import FastAPI, HTTPException, Response, status, Depends
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
 from random import randrange
 import pyodbc
 import time
+from sqlalchemy.orm import Session
+from . import models
+from .database import engine, get_db
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -49,11 +54,14 @@ def find_index_post(id):
 def root():
     return {"message": "Gunaydin Dünya!"}
 
+@app.get("sqlalchemy")
+def test_posts(db:Session = Depends(get_db)):
+    return {"status": "OK"}
+
 @app.get("/posts")
 def get_posts():
     cursor.execute("SELECT * FROM posts")
     posts = dict_cursor(cursor)
-    # posts = cursor.fetchall()
     return {"data": posts}
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
