@@ -12,3 +12,11 @@ class Post(Base):
     content = Column(String, nullable=False)
     published = Column(Boolean, default=True, nullable = False)
     created_at = Column(DateTime, server_default=text("GETDATE()"), nullable=False)
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    email = Column(String(100), nullable=False, unique=True)
+    password = Column(String(100), nullable=False)
+    created_at = Column(DateTime, server_default=text("GETDATE()"), nullable=False)
