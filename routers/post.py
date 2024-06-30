@@ -3,16 +3,18 @@ from fastapi import FastAPI, HTTPException, Response, status, Depends, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/posts",
+)
 
-@router.get("/posts", response_model=list[schemas.Post])
+@router.get("/", response_model=list[schemas.Post])
 def get_posts(db:Session = Depends(get_db)):
     # cursor.execute("SELECT * FROM posts")
     # posts = dict_cursor(cursor)
     posts = db.query(models.Post).all()
     return posts
 
-@router.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreate, db:Session = Depends(get_db)):
     # cursor.execute("INSERT INTO posts (title, content, published) OUTPUT INSERTED.* VALUES (?, ?, ?)",
     #                post.title, post.content, post.published)
@@ -24,7 +26,7 @@ def create_posts(post: schemas.PostCreate, db:Session = Depends(get_db)):
     db.refresh(new_post)
     return new_post
 
-@router.get("/posts/{id}", response_model=schemas.Post)
+@router.get("/{id}", response_model=schemas.Post)
 def get_post(id: int, db:Session = Depends(get_db)):
     # cursor.execute("SELECT * FROM posts WHERE id = ?", id)
     # post = dict_cursor(cursor)
@@ -34,7 +36,7 @@ def get_post(id: int, db:Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Post not found")
     return post
 
-@router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db:Session = Depends(get_db)):
     # cursor.execute("DELETE FROM posts WHERE id = ?", id)
     # conn.commit()
@@ -47,7 +49,7 @@ def delete_post(id: int, db:Session = Depends(get_db)):
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.put("/posts/{id}", response_model=schemas.Post)
+@router.put("/{id}", response_model=schemas.Post)
 def update_post(id: int, updated_post: schemas.PostCreate, db:Session = Depends(get_db)):
     # cursor.execute("UPDATE posts SET title = ?, content = ?, published = ? WHERE id = ?",
     #                 post.title, post.content, post.published, id)
