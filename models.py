@@ -1,7 +1,7 @@
 import datetime
 from .database import Base
 from sqlalchemy.sql.expression import null, text
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 
 class Post(Base):
@@ -12,6 +12,8 @@ class Post(Base):
     content = Column(String, nullable=False)
     published = Column(Boolean, default=True, nullable = False)
     created_at = Column(DateTime, server_default=text("GETDATE()"), nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
 
 class User(Base):
     __tablename__ = "users"
