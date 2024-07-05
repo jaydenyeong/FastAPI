@@ -9,7 +9,7 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=list[schemas.Post])
-def get_posts(db:Session = Depends(get_db)):
+def get_posts(db:Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("SELECT * FROM posts")
     # posts = dict_cursor(cursor)
     posts = db.query(models.Post).all()
@@ -17,8 +17,7 @@ def get_posts(db:Session = Depends(get_db)):
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreate, db:Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    print(current_user.email)
-    new_post = models.Post(**post.dict())
+    new_post = models.Post(owner_id = current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -38,12 +37,15 @@ def get_post(id: int, db:Session = Depends(get_db), current_user: int = Depends(
 def delete_post(id: int, db:Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("DELETE FROM posts WHERE id = ?", id)
     # conn.commit()
-    post = db.query(models.Post).filter(models.Post.id == id)
-
-    if post.first() == None:
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    post = post_query.first()
+    if post == None:
         raise HTTPException(status_code=404, detail="Post id: {id} not found")
     
-    post.delete(synchronize_session=False)
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You are not the owner of this post")
+    
+    post_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -61,6 +63,9 @@ def update_post(id: int, updated_post: schemas.PostCreate, db:Session = Depends(
 
     if post is None:
         raise HTTPException(status_code=404, detail= f"Post {id} not found")
+    
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You are not the owner of this post")
     post_query.update(updated_post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
