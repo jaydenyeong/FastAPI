@@ -23,3 +23,9 @@ class User(Base):
     email = Column(String(100), nullable=False, unique=True)
     password = Column(String(100), nullable=False)
     created_at = Column(DateTime, server_default=text("GETDATE()"), nullable=False)
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="NO ACTION"), primary_key=True)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="NO ACTION"), primary_key=True)
