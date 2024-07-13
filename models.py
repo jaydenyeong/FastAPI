@@ -1,4 +1,3 @@
-import datetime
 from .database import Base
 from sqlalchemy.sql.expression import null, text
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
@@ -23,6 +22,7 @@ class User(Base):
     email = Column(String(100), nullable=False, unique=True)
     password = Column(String(100), nullable=False)
     created_at = Column(DateTime, server_default=text("GETDATE()"), nullable=False)
+    phone_number = Column(String(15), nullable=True)
 
 class Vote(Base):
     __tablename__ = "votes"
